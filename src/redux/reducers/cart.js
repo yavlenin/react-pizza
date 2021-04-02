@@ -4,30 +4,30 @@ const initialState = {
   totalCount: 0,
 };
 
-const getTotalPrice = (arr) => arr.reduce((totalPrice, item) => totalPrice + item.price, 0);
+const getTotalPrice = (arr) => arr.reduce((totalPrice, item) => totalPrice + item.totalPrice, 0);
+
+const getTotalCount = (arr) => arr.reduce((totalCount, item) => totalCount + item.count, 0);
 
 const pizzas = (state = initialState, action) => {
   switch (action.type) {
     case 'ADD_PIZZA_CART': {
-      const currentPizzaItems = state.items[action.payload.id]
-        ? [...state.items[action.payload.id].items, action.payload]
-        : [action.payload];
+      const itemName = `${action.payload.id}_${action.payload.size}_${action.payload.type}`;
+      const count = state.items[itemName] ? state.items[itemName].count + 1 : 1;
       const newItems = {
         ...state.items,
-        [action.payload.id]: {
-          items: currentPizzaItems,
-          totalPrice: getTotalPrice(currentPizzaItems),
+        [itemName]: {
+          id: itemName,
+          info: action.payload,
+          count,
+          totalPrice: action.payload.price * count,
         },
       };
-
-      const items = Object.values(newItems).map((obj) => obj.items);
-      const allItems = Object.values(items).flat();
 
       return {
         ...state,
         items: newItems,
-        totalCount: allItems.length,
-        totalPrice: getTotalPrice(allItems),
+        totalCount: getTotalCount(Object.values(newItems)),
+        totalPrice: getTotalPrice(Object.values(newItems)),
       };
     }
     case 'SET_TOTAL_PRICE':
@@ -54,14 +54,11 @@ const pizzas = (state = initialState, action) => {
       };
       delete newItems[action.payload];
 
-      const items = Object.values(newItems).map((obj) => obj.items);
-      const allItems = Object.values(items).flat();
-
       return {
         ...state,
         items: newItems,
-        totalCount: allItems.length,
-        totalPrice: getTotalPrice(allItems),
+        totalCount: getTotalCount(Object.values(newItems)),
+        totalPrice: getTotalPrice(Object.values(newItems)),
       };
     }
 
@@ -69,19 +66,17 @@ const pizzas = (state = initialState, action) => {
       const newItems = {
         ...state.items,
       };
-      if (newItems[action.payload].items.length > 1) {
-        newItems[action.payload].items.pop();
-        newItems[action.payload].totalPrice = getTotalPrice(newItems[action.payload].items);
+      const item = newItems[action.payload];
+      if (item.count > 1) {
+        item.count--;
+        item.totalPrice = item.info.price * item.count;
       }
-
-      const items = Object.values(newItems).map((obj) => obj.items);
-      const allItems = Object.values(items).flat();
 
       return {
         ...state,
         items: newItems,
-        totalCount: allItems.length,
-        totalPrice: getTotalPrice(allItems),
+        totalCount: getTotalCount(Object.values(newItems)),
+        totalPrice: getTotalPrice(Object.values(newItems)),
       };
     }
 
@@ -89,17 +84,15 @@ const pizzas = (state = initialState, action) => {
       const newItems = {
         ...state.items,
       };
-      newItems[action.payload].items.push(newItems[action.payload].items[0]);
-      newItems[action.payload].totalPrice = getTotalPrice(newItems[action.payload].items);
-
-      const items = Object.values(newItems).map((obj) => obj.items);
-      const allItems = Object.values(items).flat();
+      const item = newItems[action.payload];
+      item.count++;
+      item.totalPrice = item.info.price * item.count;
 
       return {
         ...state,
         items: newItems,
-        totalCount: allItems.length,
-        totalPrice: getTotalPrice(allItems),
+        totalCount: getTotalCount(Object.values(newItems)),
+        totalPrice: getTotalPrice(Object.values(newItems)),
       };
     }
     default:

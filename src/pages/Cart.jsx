@@ -10,7 +10,9 @@ function Cart() {
   const dispatch = useDispatch();
   const { items, totalPrice, totalCount } = useSelector(({ cart }) => cart);
 
-  const addedPizzas = Object.keys(items).map((pizzaIndex) => items[pizzaIndex].items[0]);
+  const addedPizzas = Object.values(items); //Object.keys(items).map((pizzaIndex) => items[pizzaIndex].info);
+
+  console.log(addedPizzas);
 
   const onClearCart = () => {
     if (window.confirm('Вы действительно хотите очистить корзину?')) {
@@ -112,11 +114,11 @@ function Cart() {
             {addedPizzas.map((pizza) => (
               <CartItem
                 id={pizza.id}
-                name={pizza.name}
-                type={pizza.type}
-                size={pizza.size}
-                totalPrice={items[pizza.id].totalPrice}
-                totalCount={items[pizza.id].items.length}
+                name={pizza.info.name}
+                type={pizza.info.type}
+                size={pizza.info.size}
+                totalPrice={pizza.totalPrice}
+                totalCount={pizza.count}
                 onRemove={onRemoveItem}
                 key={pizza.id}
                 onPlus={onPlusItem}
